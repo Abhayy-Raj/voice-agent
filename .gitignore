@@ -1,0 +1,22 @@
+# Environment variables - contains your secret API key
+.env
+
+# Output folder - generated files, not needed on GitHub
+output/
+
+# Python cache files - auto-generated, not needed
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environment folders
+.venv/
+venv/
+env/
+
+# Gradio cache
+.gradio/
+
+# OS files
+.DS_Store
+Thumbs.db
