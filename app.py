@@ -5,7 +5,6 @@ Connects STT → Intent Detection → Tool Execution → Display Results.
 """
 
 import os
-import tempfile
 import gradio as gr
 from dotenv import load_dotenv
 
@@ -35,29 +34,29 @@ INTENT_LABELS = {
 
 # ─── CORE PIPELINE ─────────────────────────────────────────────────────────────
 
-def run_pipeline(audio_path: str) -> tuple:
+def run_pipeline(audio_path: str, text_command: str) -> tuple:
     """
-    Full pipeline: audio → transcription → intent → tool execution.
-
-    Args:
-        audio_path: Path to the recorded or uploaded audio file
-
-    Returns:
-        Tuple of (transcription, intent_display, action_taken, final_output)
+    Full pipeline: audio OR text → transcription → intent → tool execution.
     """
-    if audio_path is None:
-        return "⚠️ No audio provided.", "", "", ""
 
-    # ── Step 1: Speech to Text ──────────────────────────────────────────────
-    try:
-        transcription = transcribe_audio(audio_path)
-    except Exception as e:
-        return f"❌ Transcription failed: {str(e)}", "", "", ""
+    # ── Decide input source ─────────────────────────────────────────────
+    # If user typed something, use that. Otherwise use audio.
+    if text_command and text_command.strip():
+        transcription = text_command.strip()
 
-    if not transcription:
-        return "⚠️ Could not understand the audio. Please try again.", "", "", ""
+    elif audio_path is not None:
+        try:
+            transcription = transcribe_audio(audio_path)
+        except Exception as e:
+            return f"❌ Transcription failed: {str(e)}", "", "", ""
 
-    # ── Step 2: Detect Intent ───────────────────────────────────────────────
+        if not transcription:
+            return "⚠️ Could not understand the audio. Please try again.", "", "", ""
+
+    else:
+        return "⚠️ Please record audio or type a command.", "", "", ""
+
+    # ── Step 2: Detect Intent ───────────────────────────────────────────
     try:
         intent_data = detect_intent(transcription)
     except Exception as e:
@@ -73,9 +72,9 @@ def run_pipeline(audio_path: str) -> tuple:
     label = INTENT_LABELS.get(intent, intent)
     intent_display = f"{icon} {label}\n\n{description}"
 
-    # ── Step 3: Execute Tool ────────────────────────────────────────────────
-    action_taken  = ""
-    final_output  = ""
+    # ── Step 3: Execute Tool ────────────────────────────────────────────
+    action_taken = ""
+    final_output = ""
 
     if intent == "create_file":
         result = create_file(filename or "new_file.txt")
@@ -103,7 +102,7 @@ def run_pipeline(audio_path: str) -> tuple:
 
     else:
         action_taken = "⚠️ Unknown intent"
-        final_output = "Sorry, I didn't understand that command. Please try again."
+        final_output = "Sorry, I did not understand that command. Please try again."
 
     return transcription, intent_display, action_taken, final_output
 
@@ -223,6 +222,16 @@ def build_ui():
                     type="filepath",
                     label=""
                 )
+
+        with gr.Row():
+            with gr.Column(scale=4):
+                gr.HTML('<div class="panel-label">✍️ Or Type a Command</div>')
+                text_input = gr.Textbox(
+                    label="",
+                    placeholder='e.g. "Create a file called notes.txt" or "What is machine learning?"',
+                    lines=1
+                )
+            with gr.Column(scale=1):
                 run_btn = gr.Button("▶  Run Agent", variant="primary")
 
         # ── Output Row ──────────────────────────────────────────────────────
@@ -269,9 +278,10 @@ def build_ui():
         # ── Wire up the button ───────────────────────────────────────────────
         run_btn.click(
             fn=run_pipeline,
-            inputs=[audio_input],
+            inputs=[audio_input, text_input],
             outputs=[transcription_out, intent_out, action_out, output_out]
         )
+
 
     return demo
 
