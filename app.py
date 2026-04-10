@@ -230,7 +230,7 @@ def build_ui():
 
         with gr.Row():
             with gr.Column(scale=1):
-                gr.HTML('<div class="panel-label">📄 Transcription</div>')
+                gr.HTML('<div class="panel-label">Transcription</div>')
                 transcription_out = gr.Textbox(
                     label="",
                     lines=3,
@@ -239,7 +239,7 @@ def build_ui():
                 )
 
             with gr.Column(scale=1):
-                gr.HTML('<div class="panel-label">🎯 Detected Intent</div>')
+                gr.HTML('<div class="panel-label">Detected Intent</div>')
                 intent_out = gr.Textbox(
                     label="",
                     lines=3,
@@ -249,7 +249,7 @@ def build_ui():
 
         with gr.Row():
             with gr.Column(scale=1):
-                gr.HTML('<div class="panel-label">⚙️ Action Taken</div>')
+                gr.HTML('<div class="panel-label">Action Taken</div>')
                 action_out = gr.Textbox(
                     label="",
                     lines=2,
@@ -258,24 +258,13 @@ def build_ui():
                 )
 
             with gr.Column(scale=1):
-                gr.HTML('<div class="panel-label">✅ Final Output</div>')
+                gr.HTML('<div class="panel-label">Final Output</div>')
                 output_out = gr.Markdown(
                     value="",
                 )
 
-        # ── Examples ────────────────────────────────────────────────────────
-        gr.HTML("""
-        <div style="margin-top:1.5rem; padding: 1rem; background:#111118;
-             border:1px solid #1e1e2e; border-radius:12px;">
-            <div class="panel-label">💡 Example Commands (say these)</div>
-            <ul style="color:#6b6b8a; font-size:0.9rem; margin-top:0.5rem; padding-left:1.2rem;">
-                <li>"Create a file called notes.txt"</li>
-                <li>"Write a Python function for binary search and save it"</li>
-                <li>"Summarize this: The quick brown fox jumps over the lazy dog repeatedly"</li>
-                <li>"What is machine learning?"</li>
-            </ul>
-        </div>
-        """)
+       
+        
 
         # ── Wire up the button ───────────────────────────────────────────────
         run_btn.click(
