@@ -11,7 +11,7 @@ from tools import create_file, write_code, summarize_text, general_chat
 load_dotenv()
 
 
-#  INTENT ICONS (for display)
+#  INTENT ICONS 
 INTENT_ICONS = {
     "create_file":  "📁",
     "write_code":   "💻",
