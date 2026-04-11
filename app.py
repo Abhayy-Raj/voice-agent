@@ -1,8 +1,3 @@
-"""
-app.py - Main Application
-Voice-controlled AI agent with a Gradio UI.
-Connects STT → Intent Detection → Tool Execution → Display Results.
-"""
 
 import os
 import gradio as gr
@@ -16,7 +11,7 @@ from tools import create_file, write_code, summarize_text, general_chat
 load_dotenv()
 
 
-# ─── INTENT ICONS (for display) ────────────────────────────────────────────────
+#  INTENT ICONS (for display)
 INTENT_ICONS = {
     "create_file":  "📁",
     "write_code":   "💻",
@@ -32,7 +27,7 @@ INTENT_LABELS = {
 }
 
 
-# ─── CORE PIPELINE ─────────────────────────────────────────────────────────────
+# CORE PIPELINE
 
 def run_pipeline(audio_path: str, text_command: str) -> tuple:
     """
@@ -48,19 +43,19 @@ def run_pipeline(audio_path: str, text_command: str) -> tuple:
         try:
             transcription = transcribe_audio(audio_path)
         except Exception as e:
-            return f"❌ Transcription failed: {str(e)}", "", "", ""
+            return f" Transcription failed: {str(e)}", "", "", ""
 
         if not transcription:
-            return "⚠️ Could not understand the audio. Please try again.", "", "", ""
+            return " Could not understand the audio. Please try again.", "", "", ""
 
     else:
-        return "⚠️ Please record audio or type a command.", "", "", ""
+        return "Please record audio or type a command.", "", "", ""
 
-    # ── Step 2: Detect Intent ───────────────────────────────────────────
+    #Step 2: Detect Intent 
     try:
         intent_data = detect_intent(transcription)
     except Exception as e:
-        return transcription, f"❌ Intent detection failed: {str(e)}", "", ""
+        return transcription, f"Intent detection failed: {str(e)}", "", ""
 
     intent        = intent_data.get("intent", "general_chat")
     filename      = intent_data.get("filename")
@@ -107,7 +102,7 @@ def run_pipeline(audio_path: str, text_command: str) -> tuple:
     return transcription, intent_display, action_taken, final_output
 
 
-# ─── GRADIO UI ──────────────────────────────────────────────────────────────────
+#   GRADIO UI 
 
 def build_ui():
     """Build and return the Gradio interface."""
@@ -205,7 +200,7 @@ def build_ui():
         title="Voice AI Agent"
     ) as demo:
 
-        # ── Header ─────────────────────────────────────────────────────────
+        # Header
         gr.HTML("""
         <div class="app-header">
             <h1>🎙️ Voice AI Agent</h1>
@@ -213,7 +208,7 @@ def build_ui():
         </div>
         """)
 
-        # ── Input Row ───────────────────────────────────────────────────────
+        # Input Row
         with gr.Row():
             with gr.Column(scale=1):
                 gr.HTML('<div class="panel-label">Audio Input</div>')
@@ -234,7 +229,7 @@ def build_ui():
             with gr.Column(scale=1):
                 run_btn = gr.Button("▶  Run Agent", variant="primary")
 
-        # ── Output Row ──────────────────────────────────────────────────────
+        #Output Row
         gr.HTML('<div style="height: 1rem;"></div>')
 
         with gr.Row():
@@ -275,7 +270,7 @@ def build_ui():
        
         
 
-        # ── Wire up the button ───────────────────────────────────────────────
+        #Wire up the button 
         run_btn.click(
             fn=run_pipeline,
             inputs=[audio_input, text_input],
@@ -286,8 +281,7 @@ def build_ui():
     return demo
 
 
-# ─── ENTRY POINT ───────────────────────────────────────────────────────────────
-
+#ENTRY POINT
 if __name__ == "__main__":
     # Sanity check for API key
     if not os.environ.get("GROQ_API_KEY"):
