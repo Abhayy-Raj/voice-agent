@@ -1,37 +1,20 @@
-"""
-intent.py - Intent Classification Module
-Uses Groq's LLaMA model to understand what the user wants to do.
-"""
+# intent.py
+# handles intent detection for the voice agent
 
 import os
 import json
 from groq import Groq
 
-
-# All supported intent types
 SUPPORTED_INTENTS = ["create_file", "write_code", "summarize", "general_chat"]
 
 INTENT_DESCRIPTIONS = {
-    "create_file":   "User wants to create a file or folder",
-    "write_code":    "User wants to generate and save code to a file",
-    "summarize":     "User wants to summarize a piece of text",
-    "general_chat":  "General question or conversation"
+    "create_file": "User wants to create a file or folder",
+    "write_code": "User wants to generate and save code to a file",
+    "summarize": "User wants to summarize a piece of text",
+    "general_chat": "General question or conversation"
 }
 
-
-def detect_intent(transcribed_text: str) -> dict:
-    """
-    Detect the user's intent from transcribed text.
-
-    Args:
-        transcribed_text: The text transcribed from audio
-
-    Returns:
-        A dict with keys: intent, filename, language, content, response
-    """
-    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-
-    system_prompt = """
+SYSTEM_PROMPT = """
 You are an intent classifier for a voice-controlled AI agent.
 Your job is to analyze a user command and return a structured JSON response.
 
@@ -58,21 +41,25 @@ Rules:
 - Never include anything outside the JSON block
 """
 
-    response = client.chat.completions.create(
+
+def detect_intent(transcribed_text: str) -> dict:
+    # TODO: maybe add retry logic here if groq times out
+    client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+    resp = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user",   "content": transcribed_text}
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": transcribed_text}
         ],
         temperature=0.2
     )
 
-    raw = response.choices[0].message.content.strip()
+    try:
+        result = json.loads(resp.choices[0].message.content.strip())
+    except json.JSONDecodeError:
+        return {"intent": "general_chat", "filename": None, "language": None, "content": None, "description": "fallback"}
 
-    # Safely parse the JSON response from the model
-    result = json.loads(raw)
-
-    # Fallback: ensure intent is always one of the supported ones
     if result.get("intent") not in SUPPORTED_INTENTS:
         result["intent"] = "general_chat"
 
